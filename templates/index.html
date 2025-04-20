@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Browser</title>
+    <link rel="icon" href="/static/icons/icon.png" type="image/png">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="/static/styles/styles.css" rel="stylesheet">
+</head>
+
+<body>
+    <header>
+        <div class="logo">File Browser</div>
+        <div class="header-controls">
+            <div class="media-stats" id="media-stats">
+                <span id="video-count">0</span> videos, <span id="image-count">0</span> images
+            </div>
+            <button id="change-dir-btn" class="dir-btn"><i class="fas fa-folder-open"></i> Change Directory</button>
+            <button id="upload-btn" class="upload-btn"><i class="fas fa-upload"></i> Upload</button>
+            <a href="/logout" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+
+        </div>
+
+    </header>
+
+    <div class="container">
+        <div id="error" class="error" style="display: none;"></div>
+
+        <div class="breadcrumb" id="breadcrumb">
+            <a href="#" data-path=""><i class="fas fa-home"></i> Home</a>
+        </div>
+
+        <div id="loading" class="loading">Loading...</div>
+        <div id="file-grid" class="file-grid"></div>
+    </div>
+    <!-- Upload Modal -->
+    <div id="upload-modal" class="upload-modal">
+        <div class="upload-modal-content">
+            <div class="upload-modal-header">
+                <h2>Upload Files</h2>
+                <span class="upload-close">&times;</span>
+            </div>
+            <div class="upload-modal-body">
+                <form id="upload-form" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="custom-folder">Upload to Folder</label>
+                        <input type="text" id="custom-folder" name="custom_folder" value="uploads"
+                            placeholder="Enter folder name" class="form-input" dir="auto">
+                        <small class="form-help">Leave as "uploads" or specify a custom folder name</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="file-input">Select Files</label>
+                        <input type="file" id="file-input" name="file" multiple>
+                    </div>
+                    <div class="form-group">
+                        <label for="folder-input">Or Select a Folder</label>
+                        <input type="file" id="folder-input" name="folder" webkitdirectory directory multiple>
+                    </div>
+                    <div id="upload-queue" class="upload-queue"></div>
+                    <div class="form-group">
+                        <button type="submit" class="upload-submit-btn">Upload</button>
+                    </div>
+                </form>
+                <div id="upload-message" class="upload-message"></div>
+            </div>
+        </div>
+    </div>
+    <div class="media-viewer" id="media-viewer">
+        <button class="close-btn" id="close-media"><i class="fas fa-times"></i></button>
+        <div class="media-title" id="media-title"></div>
+        <div class="media-container">
+            <video id="video" controls autoplay style="display: none;"></video>
+            <img id="image" style="display: none;">
+        </div>
+        <a id="download-btn" class="download-btn" href="#" download target="_blank">
+            <i class="fas fa-download"></i> Download
+        </a>
+    </div>
+    <!-- Directory Selector Modal -->
+    <div id="dir-selector-modal" class="modal-selector">
+        <div class="modal-content-selector">
+            <div class="modal-header-selector">
+                <h2>Select Directory</h2>
+                <div id="error2" class="error" style="display: none;"></div>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body-selector">
+                <div class="breadcrumb" id="dir-selector-breadcrumb">
+                    <a href="#" data-path=""><i class="fas fa-hdd"></i> Drives</a>
+                </div>
+                <div id="dir-loading" class="loading">Loading directories...</div>
+                <div id="dir-listing" class="dir-listing"></div>
+                <div class="dir-selector-actions">
+                    <button id="select-directory-btn" class="primary-btn">Select This Directory</button>
+                    <button id="cancel-directory-btn" class="secondary-btn">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script src="/static/js/index.js" type="module"></script>
+<script src="/static/js/uploader.js" type="module"></script>
+<script src="/static/js/selector.js" type="module"></script>
+
+</html>
