@@ -60,7 +60,7 @@ python server.py
 
 2. Access the web interface:
    - On the same computer: http://localhost:5000
-   - From other devices on the same network: http://<your-ip-address>:5000
+   - From other devices on the same network: http://your-local-ip-address:5000
 
 3. Log in with your password.
 
