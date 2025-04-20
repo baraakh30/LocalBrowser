@@ -1,6 +1,6 @@
 ## Overview
 
-LocalBrowser is a Python-based web server that allows you to browse, view, and upload files on your computer through a web interface. It's designed to provide easy access to your media files (images and videos) with thumbnail generation and streaming capabilities.
+LocalFileExplorer is a Python-based web server that allows you to browse, view, and upload files on your computer through a web interface. It's designed to provide easy access to your media files (images and videos) with thumbnail generation and streaming capabilities.
 
 ## Features
 
@@ -25,8 +25,8 @@ LocalBrowser is a Python-based web server that allows you to browse, view, and u
 1. Clone the repository or download the source code:
 
 ```bash
-git clone https://github.com/baraakh30/LocalBrowser.git localbrowser
-cd localbrowser
+git clone https://github.com/baraakh30/LocalFileExplorer.git explorer
+cd explorer
 ```
 
 2. Install the required Python packages using the requirements.txt file:
