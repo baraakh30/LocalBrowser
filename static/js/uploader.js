@@ -10,6 +10,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const fileInput = document.getElementById('file-input');
     const folderInput = document.getElementById('folder-input');
     const uploadQueue = document.getElementById('upload-queue');
+    
+    // New URL download elements
+    const urlInput = document.getElementById('url-input');
+    const downloadUrlBtn = document.getElementById('download-url-btn');
 
     uploadBtn.addEventListener('click', function () {
         uploadModal.style.display = 'block';
@@ -18,6 +22,7 @@ document.addEventListener('DOMContentLoaded', function () {
         uploadQueue.innerHTML = '';
         fileInput.value = '';
         folderInput.value = '';
+        if (urlInput) urlInput.value = ''; // Clear URL input if it exists
     });
 
     uploadClose.addEventListener('click', function () {
@@ -39,6 +44,44 @@ document.addEventListener('DOMContentLoaded', function () {
     folderInput.addEventListener('change', function () {
         displaySelectedFiles(this.files);
     });
+
+    // Add event listener for the download URL button if it exists
+    if (downloadUrlBtn) {
+        downloadUrlBtn.addEventListener('click', function() {
+            const url = urlInput.value.trim();
+            if (!url) {
+                showUploadMessage('Please enter a URL to download', 'error');
+                return;
+            }
+            
+            const customFolder = document.getElementById('custom-folder').value.trim() || 'uploads';
+            
+            // Send the URL to the server for IDM processing
+            fetch('/api/download-url', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    url: url,
+                    custom_folder: customFolder,
+                    current_dir: currentPath
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    showUploadMessage(`Error: ${data.error}`, 'error');
+                } else {
+                    showUploadMessage(`URL sent to Internet Download Manager`, 'success');
+                    urlInput.value = ''; // Clear input on success
+                }
+            })
+            .catch(error => {
+                showUploadMessage(`Failed to send URL: ${error}`, 'error');
+            });
+        });
+    }
 
     function displaySelectedFiles(files) {
         uploadQueue.innerHTML = '';

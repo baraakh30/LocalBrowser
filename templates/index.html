@@ -58,6 +58,14 @@
                         <label for="folder-input">Or Select a Folder</label>
                         <input type="file" id="folder-input" name="folder" webkitdirectory directory multiple>
                     </div>
+                    <div class="form-group">
+                        <label for="url-input">Or Enter URL to Download</label>
+                        <div class="url-input-group">
+                            <input type="url" id="url-input" name="url" placeholder="https://example.com/file.zip" class="form-input">
+                            <button type="button" id="download-url-btn" class="download-url-btn">Download</button>
+                        </div>
+                        <small class="form-help">The file will be downloaded using Internet Download Manager</small>
+                    </div>
                     <div id="upload-queue" class="upload-queue"></div>
                     <div class="form-group">
                         <button type="submit" class="upload-submit-btn">Upload</button>

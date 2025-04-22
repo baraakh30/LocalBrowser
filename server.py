@@ -1,3 +1,5 @@
+import datetime
+import re
 from flask import Flask, render_template, send_file, send_from_directory, request, jsonify, abort, Response, session, redirect, url_for
 import mimetypes
 import platform
@@ -12,7 +14,10 @@ import functools
 import os
 import string
 import mimetypes
-
+from urllib.parse import urlparse, unquote
+from PIL import Image
+from io import BytesIO
+            
 mimetypes.add_type('application/javascript', '.js')
 mimetypes.add_type('text/css', '.css')
 
@@ -414,9 +419,7 @@ def serve_image(filename):
     if is_thumbnail:
         # Send image as a thumbnail with resizing on-the-fly
         try:
-            from PIL import Image
-            from io import BytesIO
-            
+
             # Open image and resize
             with Image.open(target_file) as img:
                 # Keep aspect ratio, max width 320px
@@ -677,6 +680,111 @@ def change_directory():
             "success": True,
             "path": new_path
         })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+
+@app.route('/api/download-url', methods=['POST'])
+@login_required
+def download_url():
+    try:
+        data = request.json
+        url = data.get('url')
+        custom_folder = data.get('custom_folder', 'uploads')
+        current_dir = data.get('current_dir', '')
+        
+        if not url:
+            return jsonify({"error": "No URL provided"}), 400
+        
+        # Create target directory path
+        if current_dir:
+            # If uploading to a subdirectory
+            target_dir = os.path.normpath(os.path.join(BASE_DIR, current_dir, custom_folder))
+        else:
+            # If uploading to base directory
+            target_dir = os.path.normpath(os.path.join(BASE_DIR, custom_folder))
+        
+        # Prevent directory traversal attacks
+        if not target_dir.startswith(BASE_DIR):
+            return jsonify({"error": "Access denied"}), 403
+        
+        # Prevent writing to restricted paths
+        if is_restricted_path(target_dir):
+            return jsonify({"error": "Cannot download to system directories"}), 403
+        
+        # Create download directory if it doesn't exist
+        os.makedirs(target_dir, exist_ok=True)
+        
+        # Extract filename from URL
+        from urllib.parse import urlparse, unquote, parse_qs
+        parsed_url = urlparse(url)
+        
+        # First, check for a customName parameter in the query string
+        filename = None
+        if parsed_url.query:
+            query_params = parse_qs(parsed_url.query)
+            if 'customName' in query_params and query_params['customName'][0]:
+                filename = unquote(query_params['customName'][0])
+                # Clean the filename of any problematic characters
+                filename = re.sub(r'[\\/*?:"<>|]', '_', filename)
+        
+        # If no customName parameter, extract filename from path
+        if not filename:
+            path = unquote(parsed_url.path)
+            filename = os.path.basename(path)
+        
+        # If still no filename found or it's empty, use a default name
+        if not filename or filename == '/' or filename == '':
+            filename = "download.bin"
+        
+        # Make sure we have an extension
+        name, ext = os.path.splitext(filename)
+        if not ext:
+            # Try to guess extension from URL
+            if 'video' in url.lower() or 'mp4' in url.lower():
+                ext = '.mp4'
+            elif 'audio' in url.lower() or 'mp3' in url.lower():
+                ext = '.mp3'
+            else:
+                ext = '.bin'
+            
+            filename = name + ext
+        
+        # Generate a unique filename to prevent overwriting
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        unique_name = f"{name}_{timestamp}{ext}"
+        
+        # Make sure filename is not too long for Windows
+        if len(unique_name) > 240:
+            unique_name = f"download_{timestamp}{ext}"
+        
+        # Call Internet Download Manager
+        idm_path = r"C:\Program Files (x86)\Internet Download Manager\IDMan.exe"
+        
+        # Check if IDM exists
+        if not os.path.exists(idm_path):
+            return jsonify({"error": "Internet Download Manager not found"}), 500
+        
+        try:
+            # Use shell=False to avoid issues with special characters in URLs
+            subprocess.Popen([
+                idm_path, 
+                "/d", url,             # Download URL
+                "/p", target_dir,      # Download path
+                "/f", unique_name,     # Specify filename
+                "/n"                   # Add to download queue
+            ], shell=False)
+            
+            return jsonify({
+                "success": True,
+                "message": "URL sent to Internet Download Manager",
+                "url": url,
+                "path": target_dir,
+                "filename": unique_name
+            })
+        except Exception as e:
+            return jsonify({"error": f"Failed to start download: {str(e)}"}), 500
+        
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
